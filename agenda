@@ -1,0 +1,557 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
+using System.IO;
+
+namespace Agenda_CristhianFunez_Marc_Rodriguez
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            menu();
+            
+        }
+        static void menu()
+        {
+            int error = 0;
+            string opcio, opcionsvalides;
+            opcionsvalides = "123456Q";
+            bool valid = false;
+            Console.WriteLine(" 1 - Donar d’alta usuari");
+            Console.WriteLine(" 2 - Recuperar usuari ");
+            Console.WriteLine(" 3 - Modificar usuari ");
+            Console.WriteLine(" 4 - Eliminar usuari ");
+            Console.WriteLine(" 5 - Mostrar agenda");
+            Console.WriteLine(" 6 - Ordenar agenda");
+            Console.WriteLine(" Q - sortir menú ");
+
+            do
+            {
+                do
+                {
+                    if (error == 0)
+                    {
+                        Console.WriteLine("Introdueix el caracter corresponden a la opcio");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Torna a introduir el caracter corresponden a la opcio");
+                    }
+                    opcio = Console.ReadLine();
+                    error++;
+                } while (opcio.Length != 1);
+                for (int i = 0; i < opcionsvalides.Length; i++)
+                {
+                    if (opcio[0] == opcionsvalides[i])
+                    {
+                        valid = true;
+                    }
+                }
+            } while (valid != true);
+
+            if (opcio[0] == '1')
+            {
+                donardealta();
+            }
+            if (opcio[0] == '2')
+            {
+                recuperausuari();
+            }
+            if (opcio[0] == '3')
+            {
+                modificarusuaris();
+            }
+
+
+
+        }
+        static void modificarusuaris()
+        {
+            int error = 0;
+            string opcio, opcionsvalides, usuari;
+            opcionsvalides = "123456";
+            bool valid = false;
+            Console.WriteLine("1 - Nombre");
+            Console.WriteLine("2 - Cognom");
+            Console.WriteLine("3 - DNI");
+            Console.WriteLine("4 - Telefon");
+            Console.WriteLine("5 - Data de naixement");
+            Console.WriteLine("6 - Correu");
+
+            do
+            {
+                do
+                {
+                    if (error == 0)
+                    {
+                        Console.WriteLine("Introdueix el caracter corresponden a la opcio per modificar el usuari");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Torna a introduir el caracter corresponden a la opcio per modificar el usuari");
+                    }
+                    opcio = Console.ReadLine();
+                    error++;
+                } while (opcio.Length != 1);
+                for (int i = 0; i < opcionsvalides.Length; i++)
+                {
+                    if (opcio[0] == opcionsvalides[i])
+                    {
+                        valid = true;
+                    }
+                }
+            } while (valid != true);
+
+            //aqui estaran les opcions
+
+            Console.WriteLine("Escriu un nom de usuari o escriu 'mostra usuaris' per mostra els usuaris disponibles");
+            usuari = Console.ReadLine();
+            if (usuari == "mostra usuaris")
+            {
+                mostranombres();
+                Console.WriteLine("Escriu un nom de usuari per modificarlo");
+                usuari = Console.ReadLine();
+            }
+
+
+
+        }
+
+        static void recuperausuari()
+        {
+            int ubicacionpalabra, barritas, substringprincipio, substringfinal;
+            substringprincipio = 0;
+            substringfinal = 0;
+            string palabrabuscada, textofitxer;
+            string path = @".\agenda.txt";
+            textofitxer = File.ReadAllText(path); //posa tot el text del fitxer en un string
+            Console.WriteLine("Escriu un nom o escriu o escriu 'mostra usuaris' per mostra els usuaris disponibles");
+            palabrabuscada = Console.ReadLine();
+            if (palabrabuscada == "mostra usuaris")
+            {
+                mostranombres();
+                Console.WriteLine("Escriu un nom de usuari");
+                palabrabuscada = Console.ReadLine();
+            }
+            if (textofitxer.Contains(palabrabuscada)) //si conte la paraula buscada entra al if
+            {
+                ubicacionpalabra = textofitxer.IndexOf(palabrabuscada); // identifica la posicio de la paraula
+                barritas = 0;
+                for (int i = ubicacionpalabra; i >= 0; i--) // comenza desde la paraula clau, i va enrera fins trobar "-----"
+                {
+                    if (textofitxer[i] == '-')
+                    {
+                        barritas++;
+                    }
+                    if (barritas == 5)
+                    {
+                        substringprincipio = i;
+                    }
+                }
+                barritas = 0;
+                for (int i = ubicacionpalabra; i < textofitxer.Length; i++) // comenza desde la paraula clau, i va endavan fins trobar "-----"
+                {
+                    if (textofitxer[i] == '-')
+                    {
+                        barritas++;
+                    }
+                    if (barritas == 5)
+                    {
+                        substringfinal = (i - substringprincipio);
+                    }
+                }
+                Console.WriteLine(textofitxer.Substring(substringprincipio, substringfinal)); //mostra el contingut que hi ha entre
+                                                                                              // els "-----" + contingut + paraulaclau + contingut + "-----"
+            }
+            else
+            {
+                Console.WriteLine("Usuari desconegut");
+            }
+        }
+        static void donardealta()
+        {
+            {
+                //Fiquem el string perque elimini el que no sigui Lletres en nom i cognom i creem les variables per el nom i cognom
+                string nom, cognom, dni, telefon, correu, data, datacomparativa;
+                nom = " ";
+                cognom = " ";
+                dni = " ";
+                telefon = " ";
+                correu = " ";
+                int numerosvalidos, lletravalida, errors;
+                errors = 0;
+                bool validaciocorreo;
+                DateTime datadatetime = DateTime.Now;
+                //demanem el valor de nom i cognom, i li apliquem el regex per treure el que no sigui lletres 
+                Console.WriteLine("Introdueix el teu nom");
+                nom = Console.ReadLine();
+                Console.WriteLine("Introdueix el teu cognom");
+                cognom = Console.ReadLine();
+
+                nom = Nom(nom);
+                nom = MajusculaPrimeraLletra(nom);
+
+                cognom = Nom(cognom);
+                cognom = MajusculaPrimeraLletra(cognom);
+
+                //dni
+
+
+                do
+                {
+                    
+                    do
+                    {
+                        do
+                        {
+                            
+                            numerosvalidos = 0;
+                            lletravalida = 0;
+                            
+                            if( errors == 0)
+                            {
+                                Console.WriteLine("Introdueix un DNI");
+                            }
+                            else
+                            {
+                                Console.WriteLine("DNI incorrecte torna a introduirlo");
+                            }
+                            dni = Console.ReadLine();
+                            errors++;
+                        } while (dni.Length != 9); //comprova que el dni tingui 8 caracters
+
+                        for (int i = 0; i < 8; i++)
+                        {
+                            if (esnumero(dni[i]))
+                            {
+                                numerosvalidos++;
+                            }
+                        }
+                    } while (numerosvalidos != 8); //comprova que dni tingui 8 numeros
+                    if (eslletra(dni[8]))
+                    {
+                        lletravalida = 1;
+                    }
+
+                } while (lletravalida != 1); //comprova que dni tingui el ultin caracter una lletra
+
+                //
+                errors = 0;
+                //telefon
+                do
+                {
+                    numerosvalidos = 0;
+                    do
+                    {
+                        if (errors == 0)
+                        {
+                            Console.WriteLine("Introdueix un numero de telefon");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Telefon incorrecte torna a introduirlo");
+                        }
+                                                                        //aqui podriamos poner que elimine espacios
+                        telefon = Console.ReadLine();                   // es decir "663 81 61 80" para que tambien sean validos
+                        errors++;
+                    } while (telefon.Length != 9); // verifica que sean 9 caracteres
+                    for (int i = 0; i < telefon.Length; i++)
+                    {
+                        if (esnumero(telefon[i]))
+                        {
+                            numerosvalidos++;
+                        }
+                    }
+
+                } while (numerosvalidos != 9); // verifica que sean 9 numeros
+
+                // data naixament
+                datacomparativa = String.Format("{0:00}/{1:00}/{2:0000}", datadatetime.Day, datadatetime.Month, datadatetime.Year, datadatetime.Hour, datadatetime.Minute, datadatetime.Second, datadatetime.Millisecond);
+                errors = 0;
+                do
+                { 
+                    if( errors == 0)
+                    {
+                        Console.WriteLine("introdueix data en format dd/mm/aaaa");
+                    }
+                    else
+                    {
+                        Console.WriteLine("data incorrecta torna a introduirla en format dd/mm/aaaa");
+                    }
+                    data = Console.ReadLine();
+                    try
+                    {
+                        datadatetime = Convert.ToDateTime(data);
+                        datacomparativa = String.Format("{0:00}/{1:00}/{2:0000}", datadatetime.Day, datadatetime.Month, datadatetime.Year, datadatetime.Hour, datadatetime.Minute, datadatetime.Second, datadatetime.Millisecond);
+                    }
+                    catch { }
+                    errors++;
+                } while (data != datacomparativa);
+
+
+                //
+
+                //correo
+                errors = 0;
+                do
+                {
+                    validaciocorreo = false;
+                    if(errors == 0)
+                    {
+                        Console.WriteLine("Introdueix un correo .es | .com");
+                    }
+                    else
+                    {
+                        Console.WriteLine("correu incorrecte torna a introduirlo .es | .com");
+                    }
+                    correu = Console.ReadLine();
+                    validaciocorreo = validacioncorreometodo(correu);
+                    errors++;
+                } while (validaciocorreo != true);
+
+
+                //correo
+
+                Console.WriteLine(nom);
+                Console.WriteLine(cognom);
+                Console.WriteLine(dni);
+                Console.WriteLine(telefon);
+                Console.WriteLine(correu);
+
+                //afegeix
+
+                string path = @".\agenda.txt";
+                List<string> lineas = new List<string>();
+
+                lineas.Add("-----");
+                lineas.Add("Nombre: "+nom);
+                lineas.Add("Cognom: "+cognom);
+                lineas.Add("DNI: "+dni);
+                lineas.Add("Telefon: "+telefon);
+                lineas.Add("Data de naixement: "+data);
+                lineas.Add("Correu: "+correu);
+                lineas.Add("-----");
+
+                File.AppendAllLines(path, lineas);
+
+
+
+            }
+        }
+
+        //metodos marc
+        static string Nom(string nombre)
+        {
+            string nomerror = "[^a-zA-Z]";//Quita todo lo que no sean letras
+            nombre = (Regex.Replace(nombre, nomerror, String.Empty));
+            return nombre;
+        }
+
+        static string MajusculaPrimeraLletra(string nombre)
+        {
+            string primeralletra = " ";
+            string segonapart = " ";
+            nombre = nombre.ToLower();
+            primeralletra = nombre.Substring(0, 1); //m
+            primeralletra = primeralletra.ToUpper();//M
+            segonapart = nombre.Substring(1); //arc
+            nombre = primeralletra + segonapart;//Marc
+            return nombre;
+        }
+
+        //metodos marc
+
+        //metodos devatador
+
+        static bool esnumero(char puedequenumero)
+        {
+            bool validacio;
+            validacio = false;
+            if (puedequenumero >= 48 && puedequenumero <= 57)
+            {
+                validacio = true;
+                return validacio;
+            }
+            else
+            {
+                return validacio;
+            }
+        }
+
+
+        static bool eslletra(char puedequelletra)
+        {
+            bool validacio;
+            validacio = false;
+            if (puedequelletra >= 65 && puedequelletra <= 90)
+            {
+                validacio = true;
+                return validacio;
+            }
+            else
+            {
+                if (puedequelletra >= 97 && puedequelletra <= 122)
+                {
+                    validacio = true;
+                    return validacio;
+                }
+                else
+                {
+                    return validacio;
+                }
+            }
+        }
+
+        static bool validacioncorreometodo(string correo)
+        {
+            bool validcorreo;
+            validcorreo = false;
+            string esocom;
+            int arroba, punto, primeraserie, segundaseria, error;
+            esocom = " ";
+            error = 0;
+            primeraserie = 0;
+            segundaseria = 0;
+            arroba = 0;
+            punto = 0;
+            for (int i = 0; i < correo.Length; i++)
+            {
+                if (correo[i] == '.')
+                {
+                    esocom = correo.Substring(i, (correo.Length - i));
+                    punto++;
+                }
+                else
+                {
+                    if ((correo[i]) == '@')
+                    {
+                        arroba++;
+                    }
+                    else
+                    {
+                        if (eslletra(correo[i]))
+                        {
+                            if (arroba == 0)
+                            {
+                                primeraserie++;
+                            }
+                            if (arroba == 1)
+                            {
+                                segundaseria++;
+                            }
+                        }
+                        else
+                        {
+                            if (esnumero(correo[i]))
+                            {
+                                if (arroba == 0)
+                                {
+                                    primeraserie++;
+                                }
+                                if (arroba == 1)
+                                {
+                                    segundaseria++;
+                                }
+                            }
+                            else
+                            {
+                                error++;
+                            }
+                        }
+                    }
+                }
+            }
+            segundaseria = segundaseria - (esocom.Length - 1);
+            if (arroba > 1)
+            {
+                error++;
+                //Console.WriteLine("Error format incorrecte" + error);
+            }
+            if (primeraserie < 3)
+            {
+                error++;
+                //Console.WriteLine("Error abans de l arroba " + error);
+            }
+            if (segundaseria < 3)
+            {
+                error++;
+                //Console.WriteLine("Error despres de la arroba " + error);
+            }
+
+            if (esocom != ".com")
+            {
+                if (esocom != ".es")
+                {
+                    error++;
+                    //Console.WriteLine("Error te que se .com o .es");
+                }
+            }
+            if (punto > 1)
+            {
+                error++;
+                Console.WriteLine("Error massas punts");
+            }
+            if (error == 0)
+            {
+                validcorreo = true;
+                return validcorreo;
+            }
+            else
+            {
+                return validcorreo;
+            }
+        }
+
+        static void mostranombres()
+        {
+            int ubicacionpalabra, final;
+            string opcion, textofitxer, textofitxerdisminuyendo;
+            string path = @".\agenda.txt";
+            textofitxer = File.ReadAllText(path); //posa tot el text del fitxer en un string
+            opcion = "Nombre: "; // sera una opcio
+            textofitxerdisminuyendo = textofitxer;
+            bool mostranoms; // comprovara si esta la opcio
+            if (textofitxerdisminuyendo.Contains(opcion))
+            {
+                do
+                {
+                    final = 0;
+                    for (int i = 0; i < textofitxerdisminuyendo.Length; i++)
+                    {
+                        ubicacionpalabra = textofitxerdisminuyendo.IndexOf(opcion);
+                        if (i == ubicacionpalabra)
+                        {
+                            int primersalto = 0;
+                            int numerolletres = 0;
+                            for (int x = ubicacionpalabra; x < textofitxerdisminuyendo.Length; x++)
+                            {
+                                numerolletres++;
+                                if (textofitxerdisminuyendo[x] == '\r' && primersalto == 0)
+                                {
+                                    primersalto++;
+                                    Console.WriteLine("-- " + textofitxerdisminuyendo.Substring((ubicacionpalabra + opcion.Length), (numerolletres - opcion.Length)));
+                                    final = ubicacionpalabra + numerolletres;
+                                }
+                            }
+                        }
+                    }
+                    textofitxerdisminuyendo = textofitxerdisminuyendo.Substring(final, (textofitxerdisminuyendo.Length - final));
+                    mostranoms = textofitxerdisminuyendo.Contains(opcion);
+                } while (mostranoms != false);
+            }
+            else
+            {
+                Console.WriteLine("No hi ha usuaris");
+            }
+        }
+
+        
+
+
+        //metodos devastador
+    }
+}
