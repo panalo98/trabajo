@@ -1,0 +1,115 @@
+//metodos proba 5
+        static void mostranominumero()
+        {
+            int ubicacionpalabra, final, ubicacionnumero;
+            string opcionnom, textofitxer, textofitxerdisminuyendo, opciontelefon;
+            string path = @".\agenda.txt";
+            textofitxer = File.ReadAllText(path); // pone todo el texto en un string simple
+            opcionnom = "Nombre: ";// cogera los apartados que empiecen con la palabra "Nombre: "
+            opciontelefon = "Telefon: ";// cogera los apartados que empiecen con la palabra "Telefon: "
+            textofitxerdisminuyendo = textofitxer; // otro string igual a textofitxer
+            bool mostranoms; // sirve mas adelante, si hay nombres en el texto
+            if (textofitxerdisminuyendo.Contains(opcionnom)) // si hay nombres en el texto, entra
+            {
+                do 
+                {
+                    final = 0;
+                    for (int i = 0; i < textofitxerdisminuyendo.Length; i++) //recorre todo el texto, letra a letra
+                    {
+                        ubicacionpalabra = textofitxerdisminuyendo.IndexOf(opcionnom); // con el indexof, da un int con la ubicacion
+                        ubicacionnumero = textofitxerdisminuyendo.IndexOf(opciontelefon);
+                        //desde donde empieza la palabra "Nombre: "
+                        if (i == ubicacionpalabra) // una vez el recorrido(int) coincide desde donde empieza "Nombre: "
+                                                   //la idea es pillar la ubicacion donde esta el proximo salto de linia "\r"
+                        {
+                            int primersalto = 0;// cuenta los saltos de linia
+                            int numerolletres = 0; //contara el numero de letras hasta el primer salto de linia, que es donde acaba
+                            for (int x = ubicacionpalabra; x < textofitxerdisminuyendo.Length; x++) //otro recorrido del texto
+                                                                                                    // principal, pero empezando desde la ubicacion de la letra donde empieza "Nombre: "
+                            {
+                                numerolletres++;//cuenta las letras
+                                if (textofitxerdisminuyendo[x] == '\r' && primersalto == 0)//aqui solo entrara una vez
+                                                                                           //cuando se encuentre el primer salto de linia, porque ya los siguientes no nos intersan
+                                {
+                                    primersalto++;// con esto anulo que entre mas veces a este if
+
+                                    
+                                    string nomtemporal = " ";
+                                    
+                                    nomtemporal = (textofitxerdisminuyendo.Substring((ubicacionpalabra + opcionnom.Length), (numerolletres - opcionnom.Length)));
+                                    Console.WriteLine(nomtemporal);
+                                    final = ubicacionpalabra + numerolletres; //esto es muy importante,coge la ubicacion donde
+
+                                }
+                            }
+                        }
+
+
+
+                        if (i == ubicacionnumero) // una vez el recorrido(int) coincide desde donde empieza "Nombre: "
+                                                   //la idea es pillar la ubicacion donde esta el proximo salto de linia "\r"
+                        {
+                            int primersalto = 0;// cuenta los saltos de linia
+                            int numerolletres = 0; //contara el numero de letras hasta el primer salto de linia, que es donde acaba
+                            for (int x = ubicacionnumero; x < textofitxerdisminuyendo.Length; x++) //otro recorrido del texto
+                                                                                                    // principal, pero empezando desde la ubicacion de la letra donde empieza "Nombre: "
+                            {
+                                numerolletres++;//cuenta las letras
+                                if (textofitxerdisminuyendo[x] == '\r' && primersalto == 0)//aqui solo entrara una vez
+                                                                                           //cuando se encuentre el primer salto de linia, porque ya los siguientes no nos intersan
+                                {
+                                    primersalto++;// con esto anulo que entre mas veces a este if
+                                    string numerotemporal = " ";
+                                    numerotemporal = ("Telefon: " + textofitxerdisminuyendo.Substring((ubicacionnumero + opciontelefon.Length), (numerolletres - opciontelefon.Length)));
+                                    //Console.WriteLine("Telefon: " + textofitxerdisminuyendo.Substring((ubicacionnumero + opciontelefon.Length), (numerolletres - opciontelefon.Length)));
+                                    Console.WriteLine(numerotemporal);
+                                    //hace un substring desde donde empieza "Nombre: " hasta el salto de linia y lo muestra
+                                    final = ubicacionnumero + numerolletres; //esto es muy importante,coge la ubicacion donde
+
+                                }
+                            }
+                        }
+                    }
+                    textofitxerdisminuyendo = textofitxerdisminuyendo.Substring(final, (textofitxerdisminuyendo.Length - final));
+                    mostranoms = textofitxerdisminuyendo.Contains(opcionnom);
+
+
+
+
+                } while (mostranoms != false);
+            }
+            else
+            {
+                Console.WriteLine("No hi ha usuaris");
+            }
+        }
+        static void ordenarnoms (string temporal)
+        {
+            int enter = 0;
+            int numeroletras = 0;
+            for (int i= 65 ; i <= 90; i++)
+            {
+                for (int x = 0; x < temporal.Length; x++)
+                {
+                    if (i == temporal[x])
+                    {
+                        enter = 0;
+                        numeroletras = 0;
+                        for (int y = x; y < temporal.Length; y++)
+                        {
+                            numeroletras++;
+                            if (temporal[y]== '\r')
+                            {
+                                enter++;
+                            }
+                            if (enter== 2)
+                            {
+                                Console.WriteLine(temporal.Substring(x, numeroletras));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
