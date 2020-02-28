@@ -65,14 +65,52 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             {
                 modificarusuaris();
             }
+            if (opcio[0] == '4')
+            {
+                borrarusuari();
+            }
 
 
 
         }
+
+        static void borrarusuari()
+        {
+            int localizacionparrafo;
+            string borrarusuari, texto, textofitxer, parrafo;
+            texto = @".\agenda.txt";
+            textofitxer = File.ReadAllText(texto);
+
+            Console.WriteLine("Escriu un nom de usuari o escriu 'mostra usuaris' per mostra els usuaris disponibles, per eliminarlo");
+            borrarusuari = Console.ReadLine();
+            if (borrarusuari == "mostra usuaris")
+            {
+                mostranombres();
+                Console.WriteLine("Escriu un nom de usuari per borralo");
+                borrarusuari = Console.ReadLine();
+            }
+            borrarusuari = metodonombrecognom(borrarusuari);
+            if (metodoestaonoelusuarieneltext(borrarusuari))
+            {
+                parrafo = metodobuscaparagrafo(borrarusuari);
+                localizacionparrafo = textofitxer.IndexOf(parrafo);
+                textofitxer = textofitxer.Remove(localizacionparrafo, parrafo.Length);
+                File.WriteAllText(texto,textofitxer);
+                tornamenu();
+            }
+            tornamenu();
+        }
+
+
+
         static void modificarusuaris()
         {
             bool verificacio = false;
-            int error, ubicacionparagrado, ubicaciolinia, numeroletras;
+            int error, ubicacionparagrado, ubicaciolinia, numeroletras, x;
+            numeroletras = 0;
+            x = 0;
+            ubicaciolinia = 0;
+            ubicacionparagrado = 0;
             error = 0;
             string opcio, opcionsvalides, usuari, opciostring, paragrafo, texto, textofitxer, linia;
             opciostring = " ";
@@ -89,7 +127,7 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                 Console.WriteLine("Escriu un nom de usuari per modificarlo");
                 usuari = Console.ReadLine();
             }
-            if (estaonoelusuarieneltext(usuari))
+            if (metodoestaonoelusuarieneltext(usuari))
             {
                 paragrafo = metodobuscaparagrafo(usuari);
                 ubicacionparagrado = textofitxer.IndexOf(paragrafo);
@@ -100,7 +138,6 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                 Console.WriteLine("4 - Telefon");
                 Console.WriteLine("5 - Data de naixement");
                 Console.WriteLine("6 - Correu");
-
                 do
                 {
                     do
@@ -179,13 +216,14 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                     {
                         Console.WriteLine("Escriu el nou correu .es | .com");
                         opciostring = Console.ReadLine();
-                        verificacio = metodovalidaciodata(opciostring);
+                        verificacio = metodovalidaciocorreu(opciostring);
                     } while (verificacio != true);
                 }
-
+                
                 ubicaciolinia = paragrafo.IndexOf(opcio);
+                
                 Console.WriteLine(ubicaciolinia);
-                int x = ubicaciolinia;
+                x = ubicaciolinia;
                 numeroletras = 0;
                 do
                 {
@@ -193,21 +231,17 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                     numeroletras++;
                 } while (paragrafo[x] != '\r');
                 linia = opcio + opciostring;
+                textofitxer = textofitxer.Remove(ubicacionparagrado, paragrafo.Length);
                 paragrafo = paragrafo.Remove(ubicaciolinia, numeroletras);
-                paragrafo = paragrafo.Insert(ubicaciolinia, linia);
-                textofitxer = textofitxer.Remove(ubicacionparagrado, (paragrafo.Length - 1));
+                paragrafo = paragrafo.Insert(ubicaciolinia, linia);       
                 textofitxer = textofitxer.Insert(ubicacionparagrado, paragrafo);
                 File.WriteAllText(texto, textofitxer);
-
-
-
-
-
-
+                tornamenu();
             }
             else
             {
                 Console.WriteLine("usuari desconegut");
+                tornamenu();
             }
 
 
@@ -239,10 +273,12 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             if (textofitxer.Contains("Nombre: " + palabrabuscada))
             {
                 Console.WriteLine(metodobuscaparagrafo(palabrabuscada));
+                tornamenu();
             }
             else
             {
                 Console.WriteLine("usuari desconegut");
+                tornamenu();
             }
 
         }
@@ -378,6 +414,7 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                 lineas.Add("-----");
 
                 File.AppendAllLines(path, lineas);
+                tornamenu();
 
 
 
@@ -701,36 +738,37 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             palabrabuscada = "Nombre: " + palabrabuscada;
             ubicacionpalabra = textofitxer.IndexOf(palabrabuscada); // identifica la posicio de la paraula
             barritas = 0;
-            for (int i = ubicacionpalabra; i >= 0; i--) // comenza desde la paraula clau, i va enrera fins trobar "-----"
+            int x = ubicacionpalabra;
+            do
             {
-                if (textofitxer[i] == '-')
+                x--;
+                if (textofitxer[x] == '-')
                 {
                     barritas++;
                 }
-                if (barritas == 5)
-                {
-                    substringprincipio = i;
-                }
-            }
+            } while (barritas != 5);
+            substringprincipio = x;
             barritas = 0;
-            for (int i = ubicacionpalabra; i < textofitxer.Length; i++) // comenza desde la paraula clau, i va endavan fins trobar "-----"
+            x = ubicacionpalabra;
+            do
             {
-                if (textofitxer[i] == '-')
+                x++;
+                if (textofitxer[x] == '-')
                 {
                     barritas++;
                 }
-                if (barritas == 5)
-                {
-                    substringfinal = (i - substringprincipio);
-                }
-            }
+            } while (barritas != 5);
+            substringfinal = (x-substringprincipio); 
+            
             textofitxer = textofitxer.Substring(substringprincipio, substringfinal); //mostra el contingut que hi ha entre
 
             return textofitxer;
 
+            
+
             //metodos devastador
         }
-        static bool estaonoelusuarieneltext(string palabrabuscada)
+        static bool metodoestaonoelusuarieneltext(string palabrabuscada)
         {
             bool verificacio = false;
             string texto, textofitxer;
@@ -745,6 +783,22 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             else
             {
                 return verificacio;
+            }
+        }
+
+        static void tornamenu()
+        {
+            string opcio;
+            Console.WriteLine("Escriu 'Q' per sorti o qualsevol tecla per torna al menu");
+            opcio = Console.ReadLine();
+            if(opcio.Length == 1 && opcio[0] == 'Q')
+            {
+                Environment.Exit(0);
+            }
+            else
+            {
+                Console.Clear();
+                menu();
             }
         }
     }
