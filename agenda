@@ -125,7 +125,6 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                             int y = 1;
                             while (seccion[y] == subseccion[y])
                             {
-                                Console.WriteLine(y);
                                 y++;
                             }
                             if (seccion[y] < subseccion[y])
