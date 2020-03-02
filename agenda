@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Threading;
 
 namespace Agenda_CristhianFunez_Marc_Rodriguez
 {
@@ -17,10 +18,12 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
         }
         static void menu()
         {
+            Console.Clear();
             int error = 0;
             string opcio, opcionsvalides;
             opcionsvalides = "123456Q";
-            bool valid = false;
+            bool valid;
+            Console.WriteLine("-----------------------");
             Console.WriteLine(" 1 - Donar d’alta usuari");
             Console.WriteLine(" 2 - Recuperar usuari ");
             Console.WriteLine(" 3 - Modificar usuari ");
@@ -28,30 +31,29 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             Console.WriteLine(" 5 - Mostrar agenda");
             Console.WriteLine(" 6 - Ordenar agenda");
             Console.WriteLine(" Q - sortir menú ");
+            Console.WriteLine("-----------------------");
 
             do
             {
-                do
+                valid = false;
+                if (error == 0)
                 {
-                    if (error == 0)
-                    {
-                        Console.WriteLine("Introdueix el caracter corresponden a la opcio");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Torna a introduir el caracter corresponden a la opcio");
-                    }
-                    opcio = Console.ReadLine();
-                    error++;
-                } while (opcio.Length != 1);
-                for (int i = 0; i < opcionsvalides.Length; i++)
+                    Console.WriteLine("Introdueix el caracter corresponden a la opcio");
+                }
+                else
+                {
+                    Console.WriteLine("Torna a introduir el caracter corresponden a la opcio");
+                }
+                opcio = Console.ReadLine();
+                error++;
+                for(int i = 0; i < opcionsvalides.Length; i++)
                 {
                     if (opcio[0] == opcionsvalides[i])
                     {
                         valid = true;
                     }
-                }
-            } while (valid != true);
+                }    
+            } while (opcio.Length != 1 || valid != true);
 
             if (opcio[0] == '1')
             {
@@ -69,11 +71,113 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             {
                 borrarusuari();
             }
-
-
-
+            if (opcio[0] == '5')
+            {
+                //mostranombresytelefonstotsusuaris();
+            }
+            if (opcio[0] == '6')
+            {
+                ordenalaagenda();
+            }
+            if (opcio[0] == 'Q')
+            {
+                Environment.Exit(0);
+            }
         }
 
+        static void ordenalaagenda()
+        {
+            int contadorpalabras, ordenados, correcto, segundocontador;
+            correcto = 0;
+            ordenados = 0;
+            contadorpalabras = 0;
+            string linia, seccion, subseccion,liniacorrecta, llistaordenada, texto, copialiniacorrecta, textofitxer;
+            texto = @".\agenda.txt";
+            textofitxer = File.ReadAllText(texto);
+            llistaordenada = "";
+            liniacorrecta = "";
+
+            if (textofitxer.Contains("Nombre: "))
+            {
+                linia = metodomostranombresyrecuperarlo();
+                for (int i = 0; i < linia.Length; i++)
+                {
+                    if (linia[i] == ',')
+                    {
+                        contadorpalabras++;
+                    }
+                }
+                do
+                {
+                    seccion = linia.Substring(0, ((linia.IndexOf(',')) + 1));
+                    linia = linia.Remove(0, ((linia.IndexOf(',')) + 1));
+                    //Console.WriteLine("Palabra de la seccion " + seccion);
+                    correcto = 0;
+                    for (int x = 1; x <= palabrasenlalinia(linia); x++)
+                    {
+                        subseccion = linia.Substring(0, ((linia.IndexOf(',')) + 1));
+                        if (seccion[0] < subseccion[0])
+                        {
+                            correcto++;
+                        }
+                        if (seccion[0] == subseccion[0])
+                        {
+                            int y = 1;
+                            while (seccion[y] == subseccion[y])
+                            {
+                                Console.WriteLine(y);
+                                y++;
+                            }
+                            if (seccion[y] < subseccion[y])
+                            {
+                                correcto++;
+                            }
+                        }
+                        linia = linia.Remove(0, ((linia.IndexOf(',')) + 1));
+                        linia = linia.Insert(linia.Length, subseccion);
+
+                    }
+                    //Console.WriteLine("linia despues del for " + linia);
+                    //Console.WriteLine("numero de correctos " + correcto);
+                    //Console.WriteLine("numero de correctos del metodo " + palabrasenlalinia(linia));
+                    if (correcto == palabrasenlalinia(linia))
+                    {
+                        ordenados++;
+                        liniacorrecta = liniacorrecta + seccion;
+                    }
+                    else
+                    {
+                        linia = linia.Insert(linia.Length, seccion);
+                    }
+                    //Console.WriteLine("linia correcta  " + liniacorrecta);
+                    //Console.WriteLine("contador de palabras " + contadorpalabras);
+                    //Console.WriteLine("ordenados " + ordenados);
+                } while (ordenados != contadorpalabras);
+                copialiniacorrecta = liniacorrecta;
+                int posicion = 0;
+                for (int i = 0; i < liniacorrecta.Length; i++)
+                {
+                    if (liniacorrecta[i] == ',')
+                    {
+                        seccion = liniacorrecta.Substring(posicion, (i - posicion));
+                        posicion = (i + 1);
+                        //Console.WriteLine("busca el usuari " + seccion);
+                        //Console.WriteLine("linia correcta " + liniacorrecta);
+                        llistaordenada = llistaordenada + (metodobuscaparagrafo(seccion) + '\r');
+                    }
+                }
+                //Console.WriteLine(llistaordenada);
+                File.WriteAllText(texto, llistaordenada);
+                Console.WriteLine("agenda ordenada");
+                tornamenu();
+            }
+            else
+            {
+                Console.WriteLine("No hi ha usuaris");
+                tornamenu();
+            }
+            
+        }
         static void borrarusuari()
         {
             int localizacionparrafo;
@@ -89,33 +193,25 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                 Console.WriteLine("Escriu un nom de usuari per borralo");
                 borrarusuari = Console.ReadLine();
             }
-            borrarusuari = metodonombrecognom(borrarusuari);
             if (metodoestaonoelusuarieneltext(borrarusuari))
             {
                 parrafo = metodobuscaparagrafo(borrarusuari);
                 localizacionparrafo = textofitxer.IndexOf(parrafo);
-                textofitxer = textofitxer.Remove(localizacionparrafo, parrafo.Length);
+                textofitxer = textofitxer.Remove((localizacionparrafo), (parrafo.Length+1));
                 File.WriteAllText(texto,textofitxer);
-                tornamenu();
+                Console.WriteLine("--->Usuari Eliminat");
+                tornamenu();  
             }
-            tornamenu();
+            else
+            {
+                tornamenu();
+            }         
         }
-
-
-
         static void modificarusuaris()
         {
-            bool verificacio = false;
-            int error, ubicacionparagrado, ubicaciolinia, numeroletras, x;
-            numeroletras = 0;
-            x = 0;
-            ubicaciolinia = 0;
-            ubicacionparagrado = 0;
-            error = 0;
-            string opcio, opcionsvalides, usuari, opciostring, paragrafo, texto, textofitxer, linia;
-            opciostring = " ";
-            opcionsvalides = "123456";
-            bool valid = false;
+            int ubicacionparagrado, ubicaciolinia, numeroletras, x;
+            string opcio, usuari, paragrafo, texto, textofitxer, opciodospuntos;
+            
             texto = @".\agenda.txt";
             textofitxer = File.ReadAllText(texto);
 
@@ -129,130 +225,44 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             }
             if (metodoestaonoelusuarieneltext(usuari))
             {
-                paragrafo = metodobuscaparagrafo(usuari);
-                ubicacionparagrado = textofitxer.IndexOf(paragrafo);
-                Console.WriteLine(ubicacionparagrado);
-                Console.WriteLine("1 - Nombre");
-                Console.WriteLine("2 - Cognom");
-                Console.WriteLine("3 - DNI");
-                Console.WriteLine("4 - Telefon");
-                Console.WriteLine("5 - Data de naixement");
-                Console.WriteLine("6 - Correu");
                 do
                 {
-                    do
-                    {
-                        if (error == 0)
-                        {
-                            Console.WriteLine("Introdueix el caracter corresponden a la opcio per modificar el usuari");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Torna a introduir el caracter corresponden a la opcio per modificar el usuari");
-                        }
-                        opcio = Console.ReadLine();
-                        error++;
-                    } while (opcio.Length != 1);
-                    for (int i = 0; i < opcionsvalides.Length; i++)
-                    {
-                        if (opcio[0] == opcionsvalides[i])
-                        {
-                            valid = true;
-                        }
-                    }
-                } while (valid != true);
+                    Console.Clear();
+                    
+                    paragrafo = metodobuscaparagrafo(usuari);
+                    ubicacionparagrado = textofitxer.IndexOf(paragrafo);
 
-                if(opcio[0] == '1') //nom
-                {
-                    Console.WriteLine("Escriu el nou nom");
-                    opcio = "Nombre: ";
-                    opciostring = metodonombrecognom(Console.ReadLine());
-                    
-                }
-                if (opcio[0] == '2') //cognom
-                {
-                    Console.WriteLine("Escriu el nou cognom");
-                    opcio = "Cognom: ";
-                    opciostring = metodonombrecognom(Console.ReadLine());
-                }
-                if (opcio[0] == '3') //DNI
-                {
-                    
-                    opcio = "DNI: ";
+                    opcio = metodomodificarusuario(usuari);
+                    opciodospuntos = metodoopciodospuntos(opcio);
+
+                    ubicaciolinia = paragrafo.IndexOf(opciodospuntos);
+                    x = ubicaciolinia;
+                    numeroletras = 0;
                     do
                     {
-                        Console.WriteLine("Escriu el nou dni");
-                        opciostring = Console.ReadLine();
-                        verificacio = metododni(opciostring);
-                    } while (verificacio != true);
-                }
-                if (opcio[0] == '4') //telefon
-                {
-                    
-                    opcio = "Telefon: ";
-                    do
+                        x++;
+                        numeroletras++;
+                    } while (paragrafo[x] != '\r');
+
+                    textofitxer = textofitxer.Remove(ubicacionparagrado, paragrafo.Length);
+                    paragrafo = paragrafo.Remove(ubicaciolinia, numeroletras);
+                    paragrafo = paragrafo.Insert(ubicaciolinia, opcio);
+                    textofitxer = textofitxer.Insert(ubicacionparagrado, paragrafo);
+                    File.WriteAllText(texto, textofitxer);
+                    Console.WriteLine("---> " + opciodospuntos + " se ha cambiat");
+                    Console.WriteLine("Escriu 'Q' per torna a modificar el usuari o qualsevol tecla per sorti");
+                    if(opciodospuntos == "Nombre")
                     {
-                        Console.WriteLine("Escriu el nou telefon");
-                        opciostring = Console.ReadLine();
-                        verificacio = metodovalidaciotelefon(opciostring);
-                    } while (verificacio != true);
-                }
-                if (opcio[0] == '5') //data naixament
-                {
-                    
-                    opcio = "Data de naixement: ";
-                    do
-                    {
-                        Console.WriteLine("Escriu el nou data de naixement en format dd/mm/aaaa");
-                        opciostring = Console.ReadLine();
-                        verificacio = metodovalidaciodata(opciostring);
-                    } while (verificacio != true);
-                }
-                if (opcio[0] == '6') //correu
-                {
-                    
-                    opcio = "Correu: ";
-                    do
-                    {
-                        Console.WriteLine("Escriu el nou correu .es | .com");
-                        opciostring = Console.ReadLine();
-                        verificacio = metodovalidaciocorreu(opciostring);
-                    } while (verificacio != true);
-                }
-                
-                ubicaciolinia = paragrafo.IndexOf(opcio);
-                
-                Console.WriteLine(ubicaciolinia);
-                x = ubicaciolinia;
-                numeroletras = 0;
-                do
-                {
-                    x++;
-                    numeroletras++;
-                } while (paragrafo[x] != '\r');
-                linia = opcio + opciostring;
-                textofitxer = textofitxer.Remove(ubicacionparagrado, paragrafo.Length);
-                paragrafo = paragrafo.Remove(ubicaciolinia, numeroletras);
-                paragrafo = paragrafo.Insert(ubicaciolinia, linia);       
-                textofitxer = textofitxer.Insert(ubicacionparagrado, paragrafo);
-                File.WriteAllText(texto, textofitxer);
-                tornamenu();
+                        usuari = opcio.Substring((opciodospuntos.Length + 2), ((opcio.Length - opciodospuntos.Length) - 2));
+                    }
+                } while ((Console.ReadLine()) == "Q");
+                menu(); 
             }
             else
             {
                 Console.WriteLine("usuari desconegut");
                 tornamenu();
             }
-
-
-            
-
-            //aqui estaran les opcions
-
-            
-
-
-
         }
 
         static void recuperausuari()
@@ -273,7 +283,17 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             if (textofitxer.Contains("Nombre: " + palabrabuscada))
             {
                 Console.WriteLine(metodobuscaparagrafo(palabrabuscada));
-                tornamenu();
+                Console.WriteLine("Espera 5 segons");
+                Thread.Sleep(5000);
+                //for (int i = 5; i >= 0; i--) //No me gusta
+                //{
+                //    Console.Clear();
+                //    Console.WriteLine(metodobuscaparagrafo(palabrabuscada));
+                //    Console.WriteLine("Espera " + i + " segons");
+                //    Thread.Sleep(1000);
+                //}
+
+                menu();
             }
             else
             {
@@ -286,15 +306,10 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
         {
             {
                 //Fiquem el string perque elimini el que no sigui Lletres en nom i cognom i creem les variables per el nom i cognom
-                string nom, cognom, dni, telefon, correu, data, datacomparativa;
-                nom = " ";
-                cognom = " ";
-                dni = " ";
-                telefon = " ";
-                correu = " ";
-                int numerosvalidos, lletravalida, errors;
+                string nom, cognom, dni, telefon, correu, data;
+                int errors;
                 errors = 0;
-                bool validaciocorreo, validaciodni, validaciotelefon, validaciodata, validaciocorreu;
+                bool validaciodni, validaciotelefon, validaciodata, validaciocorreu;
                 DateTime datadatetime = DateTime.Now;
                 //demanem el valor de nom i cognom, i li apliquem el regex per treure el que no sigui lletres 
                 Console.WriteLine("Introdueix el teu nom");
@@ -302,6 +317,12 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
 
                 //metodo nombre
                 nom = metodonombrecognom(nom);
+                if (metodoestaonoelusuarieneltext(nom))
+                {
+                    Console.WriteLine("Aquet nom de usuari ya existeix");
+                    Console.WriteLine("PD: si posas Exem:'user200' o 'user900' es llegirà con 'User'");
+                    tornamenu();
+                }
 
                 //metodo cognom
                 Console.WriteLine("Introdueix el teu cognom");
@@ -309,8 +330,6 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                 cognom = metodonombrecognom(cognom);
 
                 //dni
-
-
                 do
                 {
                     if (errors == 0)
@@ -325,16 +344,9 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                     validaciodni = metododni(dni);
                     errors++;
                 } while (validaciodni != true);
-
-
-
-
-
-
                 //
                 errors = 0;
                 //telefon
-
                 do
                 {
                     if (errors == 0)
@@ -351,8 +363,8 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                 } while (validaciotelefon != true);
 
                 errors = 0;
-                // data naixament
 
+                // data naixament
                 do
                 {
                     if (errors == 0)
@@ -368,13 +380,8 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                     errors++;
                 } while (validaciodata != true);
 
-
-
-                //
-
                 //correo
                 errors = 0;
-
                 do
                 {
                     if (errors == 0)
@@ -389,15 +396,6 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                     validaciocorreu = metodovalidaciocorreu(correu);
                     errors++;
                 } while (validaciocorreu != true);
-
-
-                //correo
-
-                Console.WriteLine(nom);
-                Console.WriteLine(cognom);
-                Console.WriteLine(dni);
-                Console.WriteLine(telefon);
-                Console.WriteLine(correu);
 
                 //afegeix
 
@@ -414,14 +412,11 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                 lineas.Add("-----");
 
                 File.AppendAllLines(path, lineas);
+                Console.WriteLine("---> El usuari ha afegit");
                 tornamenu();
-
-
-
             }
         }
 
-        //metodos marc
         static string Nom(string nombre)
         {
             string nomerror = "[^a-zA-Z]";//Quita todo lo que no sean letras
@@ -433,17 +428,18 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
         {
             string primeralletra = " ";
             string segonapart = " ";
-            nombre = nombre.ToLower();
-            primeralletra = nombre.Substring(0, 1); //m
-            primeralletra = primeralletra.ToUpper();//M
-            segonapart = nombre.Substring(1); //arc
-            nombre = primeralletra + segonapart;//Marc
+            try
+            {
+                nombre = nombre.ToLower();
+                primeralletra = nombre.Substring(0, 1); //m
+                primeralletra = primeralletra.ToUpper();//M
+                segonapart = nombre.Substring(1); //arc
+                nombre = primeralletra + segonapart;//Marc
+            }
+            catch { }
+            
             return nombre;
         }
-
-        //metodos marc
-
-        //metodos devatador
 
         static bool esnumero(char puedequenumero)
         {
@@ -459,7 +455,6 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                 return validacio;
             }
         }
-
 
         static bool eslletra(char puedequelletra)
         {
@@ -571,7 +566,7 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             if (punto > 1)
             {
                 error++;
-                Console.WriteLine("Error massas punts");
+                //Console.WriteLine("Error massas punts");
             }
             if (error == 0)
             {
@@ -590,7 +585,7 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             string opcion, textofitxer, textofitxerdisminuyendo;
             string path = @".\agenda.txt";
             textofitxer = File.ReadAllText(path); //posa tot el text del fitxer en un string
-            opcion = "Nombre: "; // sera una opcio
+            opcion = "Nombre: "; //Nomes agafa els nombres
             textofitxerdisminuyendo = textofitxer;
             bool mostranoms; // comprovara si esta la opcio
             if (textofitxerdisminuyendo.Contains(opcion))
@@ -735,7 +730,7 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             string texto = @".\agenda.txt";
             textofitxer = File.ReadAllText(texto); //posa tot el text del fitxer en un string
             palabrabuscada = MajusculaPrimeraLletra(palabrabuscada);
-            palabrabuscada = "Nombre: " + palabrabuscada;
+            palabrabuscada = "Nombre: " + palabrabuscada + '\r';
             ubicacionpalabra = textofitxer.IndexOf(palabrabuscada); // identifica la posicio de la paraula
             barritas = 0;
             int x = ubicacionpalabra;
@@ -760,13 +755,9 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             } while (barritas != 5);
             substringfinal = (x-substringprincipio); 
             
-            textofitxer = textofitxer.Substring(substringprincipio, substringfinal); //mostra el contingut que hi ha entre
+            textofitxer = textofitxer.Substring(substringprincipio, (substringfinal+1)); //mostra el contingut que hi ha entre
 
-            return textofitxer;
-
-            
-
-            //metodos devastador
+            return textofitxer;     
         }
         static bool metodoestaonoelusuarieneltext(string palabrabuscada)
         {
@@ -774,8 +765,13 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
             string texto, textofitxer;
             texto = @".\agenda.txt";
             textofitxer = File.ReadAllText(texto); //posa tot el text del fitxer en un string
-            palabrabuscada = MajusculaPrimeraLletra(palabrabuscada);
-            if (textofitxer.Contains("Nombre: " + palabrabuscada))
+            try
+            {
+                palabrabuscada = MajusculaPrimeraLletra(palabrabuscada);
+
+            }
+            catch { }
+            if (textofitxer.Contains("Nombre: " + palabrabuscada + '\r'))
             {
                 verificacio = true;
                 return verificacio;
@@ -800,6 +796,195 @@ namespace Agenda_CristhianFunez_Marc_Rodriguez
                 Console.Clear();
                 menu();
             }
+        }
+
+        static string metodomodificarusuario(string nombreusuari)
+        {
+            bool verificacio, valid;
+            valid = false;
+            int error;
+            error = 0;
+            string opcio, opcionsvalides, opciostring, paragrafo;
+            opciostring = " ";
+            opcionsvalides = "123456";
+            paragrafo = metodobuscaparagrafo(nombreusuari);
+            Console.WriteLine("INTRODUEIX LA OPCIO QUE VOLS MODIFICAR DEL USUARI");
+            //Console.WriteLine("-----------------------");
+            //Console.WriteLine("1 - Nombre");
+            //Console.WriteLine("2 - Cognom");
+            //Console.WriteLine("3 - DNI");
+            //Console.WriteLine("4 - Telefon");
+            //Console.WriteLine("5 - Data de naixement");
+            //Console.WriteLine("6 - Correu");
+            //Console.WriteLine("-----------------------");
+            int numeros = 1;
+            int y = 0;
+            do
+            {
+                if (paragrafo[y] == '\r')
+                {
+                    
+                    
+                    paragrafo = paragrafo.Insert((y + 2), (numeros + " - "));
+                    numeros++;
+                }
+                y++;
+            } while (numeros != 7);
+            Console.WriteLine(paragrafo);
+            do
+            {
+                do
+                {
+                    if (error == 0)
+                    {
+                        Console.WriteLine("Introdueix el numero corresponden a la opcio per modificar el usuari");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Torna a introduir el numero corresponden a la opcio per modificar el usuari");
+                    }
+                    opcio = Console.ReadLine();
+                    error++;
+                } while (opcio.Length != 1);
+                for (int i = 0; i < opcionsvalides.Length; i++)
+                {
+                    if (opcio[0] == opcionsvalides[i])
+                    {
+                        valid = true;
+                    }
+                }
+            } while (valid != true);
+
+            if (opcio[0] == '1') //nom
+            {
+                Console.WriteLine("Escriu el nou nom");
+                opcio = "Nombre: ";
+                opciostring = metodonombrecognom(Console.ReadLine());
+                if (metodoestaonoelusuarieneltext(opciostring))
+                {
+                    Console.WriteLine("No es pot cambiar a aquet nombre de usuari, perque ya existeix");
+                    Console.WriteLine("PD: si posas Exem:'user200' o 'user900' es llegirà con 'User'");
+                    tornamenu();
+                }
+
+            }
+            if (opcio[0] == '2') //cognom
+            {
+                Console.WriteLine("Escriu el nou cognom");
+                opcio = "Cognom: ";
+                opciostring = metodonombrecognom(Console.ReadLine());
+            }
+            if (opcio[0] == '3') //DNI
+            {
+
+                opcio = "DNI: ";
+                do
+                {
+                    Console.WriteLine("Escriu el nou dni");
+                    opciostring = Console.ReadLine();
+                    verificacio = metododni(opciostring);
+                } while (verificacio != true);
+            }
+            if (opcio[0] == '4') //telefon
+            {
+
+                opcio = "Telefon: ";
+                do
+                {
+                    Console.WriteLine("Escriu el nou telefon");
+                    opciostring = Console.ReadLine();
+                    verificacio = metodovalidaciotelefon(opciostring);
+                } while (verificacio != true);
+            }
+            if (opcio[0] == '5') //data naixament
+            {
+
+                opcio = "Data de naixement: ";
+                do
+                {
+                    Console.WriteLine("Escriu el nou data de naixement en format dd/mm/aaaa");
+                    opciostring = Console.ReadLine();
+                    verificacio = metodovalidaciodata(opciostring);
+                } while (verificacio != true);
+            }
+            if (opcio[0] == '6') //correu
+            {
+                opcio = "Correu: ";
+                do
+                {
+                    Console.WriteLine("Escriu el nou correu .es | .com");
+                    opciostring = Console.ReadLine();
+                    verificacio = metodovalidaciocorreu(opciostring);
+                } while (verificacio != true);
+            }
+            opcio = opcio + opciostring;
+            return opcio;
+        }
+
+        static string metodoopciodospuntos(string opcio)
+        {
+            int x = 0;
+            do
+            {
+                x++;
+            } while (opcio[x] != ':');
+            opcio = opcio.Substring(0, x);
+            return opcio;
+        }
+
+        static string metodomostranombresyrecuperarlo()
+        {
+            int ubicacionpalabra, final;
+            string opcion, textofitxer, textofitxerdisminuyendo;
+            string linia = "";
+            string seccion;
+            string path = @".\agenda.txt";
+            textofitxer = File.ReadAllText(path); //posa tot el text del fitxer en un string
+            opcion = "Nombre: "; //Nomes agafa els nombres
+            textofitxerdisminuyendo = textofitxer;
+            bool mostranoms; // comprovara si esta la opcio
+            do
+            {
+                final = 0;
+                for (int i = 0; i < textofitxerdisminuyendo.Length; i++)
+                {
+                    ubicacionpalabra = textofitxerdisminuyendo.IndexOf(opcion);
+                    if (i == ubicacionpalabra)
+                    {
+                        int primersalto = 0;
+                        int numerolletres = 0;
+                        for (int x = ubicacionpalabra; x < textofitxerdisminuyendo.Length; x++)
+                        {
+                            numerolletres++;
+                            if (textofitxerdisminuyendo[x] == '\r' && primersalto == 0)
+                            {
+                                primersalto++;
+                                seccion = textofitxerdisminuyendo.Substring((ubicacionpalabra + opcion.Length), (numerolletres - (opcion.Length+1)));
+                                
+                                final = ubicacionpalabra + numerolletres;
+                                linia = linia.Insert(0, (seccion+","));
+                            }
+                        }
+                    }
+                }
+                textofitxerdisminuyendo = textofitxerdisminuyendo.Substring(final, (textofitxerdisminuyendo.Length - final));
+                mostranoms = textofitxerdisminuyendo.Contains(opcion);
+            } while (mostranoms != false);
+            return linia;
+        }
+
+        static int palabrasenlalinia(string linia)
+        {
+            int contador;
+            contador = 0;
+            for(int i = 0; i < linia.Length; i++)
+            {
+                if(linia[i] == ',')
+                {
+                    contador++;
+                }
+            }
+            return contador;
         }
     }
 }
